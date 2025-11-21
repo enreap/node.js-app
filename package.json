@@ -4,7 +4,7 @@
   "description": "This Project explains all Node JS examples",
   "main": "app.js",
   "publishConfig": {
-    "registry": "http://18.130.99.18:9980/mithuntechnologies/repository/nodejsmithuntechnologies/"
+    "registry": "http://registry nexus/"
   },
   "scripts": {
     "server": "http-server -c-1 -p 9999",
@@ -26,13 +26,13 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MithunTechnologies/node-js-application"
+    "url": "https://github.com/enreap/node.js-app.git"
   },
   "keywords": [
     "node",
-    "Mithun Technologies",
+    "Enreap",
     "express"
   ],
-  "author": "Mithun Reddy Lacchannagari",
+  "author": "babu",
   "license": "MIT"
 }
