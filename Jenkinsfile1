@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs "nodejs18"
+    }
+
+    environment {
+        SONAR_TOKEN = credentials('sonar-token-id')
+        SONAR_HOST_URL = "http://3.216.226.173:9000"
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/enreap/node.js-app.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        stage('Run SonarQube Scan') {
+            steps {
+                withSonarQubeEnv('MySonarServer') {
+                    sh '''
+                        export SONAR_TOKEN=${SONAR_TOKEN}
+                        export SONAR_HOST_URL=${SONAR_HOST_URL}
+                        npm run sonar
+                    '''
+                }
+            }
+        }
+    }
+}
