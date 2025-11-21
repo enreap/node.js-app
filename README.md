@@ -1,4 +1,4 @@
-# nodejs-app-mss
+# node.js-app
 
 To start this application first you can get this repo code using below url
 
