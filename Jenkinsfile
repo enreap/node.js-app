@@ -1,5 +1,9 @@
 pipeline {
     agent any
+    
+    tools {
+        nodejs "NodeJS 20.0.0"
+    }
 
     environment {
         // Repository & Branch
@@ -21,6 +25,12 @@ pipeline {
                 git branch: "${BRANCH_NAME}", url: "${GIT_REPO_URL}"
             }
         }
+        stage('Check Node & NPM Version') {
+            steps {
+                sh 'node -v'
+                sh 'npm -v'
+            }        
+        }        
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
@@ -54,12 +64,8 @@ pipeline {
                 }
             }
         }
-
-
-
     }
 }
-
 
 
 
