@@ -24,7 +24,7 @@ app.get('/Enreap', function(request, response) {
     response.set("Content-Type","text/html");
     response.write("<h2><center><u>Sameple Node JS  Application </u></center></h2>");
 	
-    response.write("<h2><center>Welcome to  Enreap. Please Contact +91-9980923226  +91-9980923216 +91-9014996877 for more information or send an email to devopstrainingblr@gmail.com <center></h2>" );
+    response.write("<h2><center>Welcome to  Enreap<center></h2>" );
     response.end();
     
   })
