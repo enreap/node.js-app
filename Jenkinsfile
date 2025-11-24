@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     tools {
-        nodejs "NodeJS 20.0.0"
-    }
+        nodejs "nodejs"   
+	}
 
     environment {
         // Repository & Branch
