@@ -35,20 +35,21 @@ pipeline {
             steps {
                 sh 'npm install'
             }
-        }        
+        }      
+		
         stage('SonarQube Analysis') {
             steps {
                 echo "Running SonarQube static code analysis..."
                 withSonarQubeEnv("${SONARQUBE_ENV}") {
                     withCredentials([string(credentialsId: 'sonartoken1', variable: 'SONAR_TOKEN')]) {
-                        sh """
-                            ${MAVEN_HOME}/bin/mvn clean verify sonar:sonar \\
-								-Dsonar.projectKey=node.js-app \\
-								-Dsonar.projectName='node.js-app' \\
-								-Dsonar.host.url=http://3.216.226.173:9000 \\
-								-Dsonar.token=sqp_56d19060dd79f885921aedf14d4739d4ab02ef63 \\
-								-Dsonar.qualitygate.wait=true
+					    sh """
+                            /var/lib/jenkins/tools/hudson.plugins.sonar.SonarRunnerInstallation/sonar-scanner/bin/sonar-scanner \
+                              -Dsonar.projectKey=node.js-app \
+                              -Dsonar.sources=. \
+                              -Dsonar.host.url=http://3.216.226.173:9000 \
+							  -Dsonar.token=sqp_56d19060dd79f885921aedf14d4739d4ab02ef63 \\ 
                         """
+
                     }
                 }
             }
