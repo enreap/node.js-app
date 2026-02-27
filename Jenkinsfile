@@ -69,143 +69,105 @@ pipeline {
 }
 
 
+from job
 
-// pipeline {
-//     agent any
+pipeline {
+    agent any
 
-//     environment {
-//         // SonarQube token stored as Jenkins secret text
-//         SONAR_TOKEN = credentials('sonar-token-id')
+    environment {
 
-//         // Nexus credentials stored in Jenkins (username/password)
-//         NEXUS_USER = credentials('nexus-username')
-//         NEXUS_PASSWORD = credentials('nexus-password')
+        // Git repository & branch
+        GIT_REPO_URL = 'https://github.com/enreap/node.js-app.git'
+        BRANCH_NAME  = 'main'
 
-//         // Node.js version configured in Jenkins Global Tool Configuration
-//         NODEJS_HOME = tool name: 'nodejs22.40.0', type: 'NodeJS'
-//         PATH = "${tool 'nodejs22.40.0'}/bin:${env.PATH}"
-//     }
+        // Sonar Scanner tool name from Jenkins
+        SONARQUBE_ENV = 'sonar-scanner'
 
-//     stages {
+        // SonarQube project info
+        SONAR_PROJECT_KEY = "node.js-app"
+        SONAR_HOST_URL    = "http://3.216.226.173:9000"
+        DOCKER_IMAGE = "enreapdevopsteam/sonar-project-demo"
+        DOCKER_USERNAME = "enreapdevopsteam"
+        DOCKER_PAT = "dckr_pat_rXL6w8JnJahrGp06JlL1TVPW-gk"  // Hardcoded (not secure)
+    }
 
-//         stage('Checkout Code') {
-//             steps {
-//                 git(
-//                     url: 'https://github.com/enreap/node.js-app.git',
-//                     credentialsId: 'f52a7301-4cbc-4389-91fd-0e6ef69c493d'
-//                 )
-//             }
-//         }
+    stages {
 
-//         stage('Install Dependencies') {
-//             steps {
-//                 sh 'npm ci' // clean CI install
-//             }
-//         }
+        stage('Checkout Code') {
+            steps {
+                echo "Cloning ${GIT_REPO_URL} (branch: ${BRANCH_NAME})"
+                git branch: "${BRANCH_NAME}", url: "${GIT_REPO_URL}"
+            }
+        }
 
-//         stage('Run Tests') {
-//             steps {
-//                 sh 'npm test'
-//             }
-//         }
+        stage('Install Dependencies') {
+            steps {
+                echo "Installing npm dependencies..."
+                sh "npm install"
+            }
+        }
 
-//         stage('SonarQube Analysis') {
-//             steps {
-//                 withEnv(["SONAR_TOKEN=${SONAR_TOKEN}"]) {
-//                     sh 'npm run sonar' // npm script should reference ${SONAR_TOKEN} for login
-//                 }
-//             }
-//         }
+        stage('SonarQube Analysis') {
+            steps {
+                echo "Running SonarQube Analysis..."
 
-//         stage('Publish to Nexus (Optional)') {
-//             when {
-//                 branch 'main' // only publish from main branch
-//             }
-//             steps {
-//                 withCredentials([usernamePassword(credentialsId: 'nexus-credentials-id', 
-//                                                   passwordVariable: 'NEXUS_PASSWORD', 
-//                                                   usernameVariable: 'NEXUS_USER')]) {
-//                     sh '''
-//                         npm set registry http://18.130.99.18:9980/mithuntechnologies/repository/nodejsmithuntechnologies/
-//                         npm login --registry=http://18.130.99.18:9980/mithuntechnologies/repository/nodejsmithuntechnologies/ --username $NEXUS_USER --password $NEXUS_PASSWORD
-//                         npm publish
-//                     '''
-//                 }
-//             }
-//         }
+                withSonarQubeEnv("${SONARQUBE_ENV}") {
+                    withCredentials([string(credentialsId: 'sonartoken1', variable: 'SONAR_TOKEN')]) {
 
-//         stage('Run Node.js App') {
-//             steps {
-//                 sh 'npm start'
-//             }
-//         }
+                        script {
+                            def scannerHome = tool SONARQUBE_ENV
 
-//     }
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \\
+                                  -Dsonar.projectKey=node.js-app \\
+                                  -Dsonar.sources=. \\
+                                  -Dsonar.host.url=http://3.216.226.173:9000 \\
+                                  -Dsonar.token=sqp_56d19060dd79f885921aedf14d4739d4ab02ef63
+                            """
+                        }
+                    }
+                }
+            }
+        }
 
-//     post {
-//         always {
-//             echo 'Cleaning workspace'
-//             cleanWs()
-//         }
-//         success {
-//             echo 'Pipeline completed successfully!'
-//         }
-//         failure {
-//             echo 'Pipeline failed. Check logs for details.'
-//         }
-//     }
-// }
+       //stage('Quality Gate') {
+         //   steps {
+           //     script {
+             //       echo "Waiting for Quality Gate status..."
+               //     timeout(time: 5, unit: 'MINUTES') {
+                 //       waitForQualityGate abortPipeline: true
+                  //  }
+                //}
+            //}
+        //}
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE}:${BUILD_NUMBER} ."
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                sh """
+                    echo $DOCKER_PAT | docker login -u $DOCKER_USERNAME --password-stdin
+                    docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}
+                """
+            }
+        }        
+    }
 
 
-// pipeline {
-//     agent any
-
-//     environment {
-//         // SonarQube token stored as Jenkins secret text
-//         SONAR_TOKEN = credentials('sonar-token-id')
-
-//         // Node.js version configured in Jenkins Global Tool Configuration
-//         NODEJS_HOME = tool name: 'nodejs22.40.0', type: 'NodeJS'
-//         PATH = "${tool 'nodejs22.40.0'}/bin:${env.PATH}"
-//     }
-
-//     stages {
-
-//         stage('Checkout Code') {
-//             steps {
-//                 git(
-//                     url: 'https://github.com/enreap/node.js-app.git',
-//                     credentialsId: 'f52a7301-4cbc-4389-91fd-0e6ef69c493d'
-//                 )
-//             }
-//         }
-
-//         stage('Install Dependencies') {
-//             steps {
-//                 sh 'npm ci' // clean install for CI
-//             }
-//         }
-
-//         stage('SonarQube Analysis') {
-//             steps {
-//                 withEnv(["SONAR_TOKEN=${SONAR_TOKEN}"]) {
-//                     sh 'npm run sonar' // npm script should use SONAR_TOKEN for authentication
-//                 }
-//             }
-//         }
-
-//     }
-
-//     post {
-//         always {
-//             echo 'Cleaning workspace'
-//             cleanWs()
-//         }
-//         success {
-//             echo 'Node.js build and SonarQube scan completed successfully!'
-//         }
-//         failure {
-//             echo 'Pipeline failed. Check logs for details.'
-//         }
-//     }
-// }
+    post {
+        always {
+            echo "Cleaning workspace..."
+            cleanWs()
+        }
+        success {
+            echo "✅ Pipeline completed successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed — Check Jenkins logs."
+        }
+    }
+}
