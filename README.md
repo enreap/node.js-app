@@ -30,3 +30,5 @@ To generate the Nexus token with base 64 format, we will use below command
 echo -n "username:password" | openssl base64
 
 Node js appl demo for customer 
+
+Adding new application changes to the file.
