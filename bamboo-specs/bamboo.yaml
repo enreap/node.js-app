@@ -1,0 +1,63 @@
+version: 2
+
+plan:
+  project-key: DEMO
+  key: JAVA
+  name: Java Docker Build
+
+stages:
+  - Checkout:
+      jobs:
+        - Checkout Job
+
+  - Maven Build:
+      jobs:
+        - Maven Build Job
+
+  - Docker Build:
+      jobs:
+        - Docker Build Job
+
+  - Docker Push:
+      jobs:
+        - Docker Push Job
+
+jobs:
+
+  - Checkout Job:
+      key: CHECKOUT
+      tasks:
+        - checkout:
+            repository: nodejs-app
+            force-clean-build: true
+
+  - Maven Build Job:
+      key: MAVEN
+      tasks:
+        - script:
+            interpreter: SHELL
+            scripts:
+              - mvn clean package
+
+  - Docker Build Job:
+      key: DOCKERBUILD
+      tasks:
+        - script:
+            interpreter: SHELL
+            scripts:
+              - docker build -t enreapdevopsteam/nodejs-project-demo:${bamboo.buildNumber} .
+
+  - Docker Push Job:
+      key: DOCKERPUSH
+      tasks:
+        - script:
+            interpreter: SHELL
+            scripts:
+              - echo "${bamboo.docker.password}" | docker login -u "${bamboo.docker.username}" --password-stdin
+              - docker push enreapdevopsteam/nodejs-project-demo:${bamboo.buildNumber}
+
+repositories:
+  - nodejs-app:
+      type: git
+      url: https://github.com/enreap/node.js-app.git
+      branch: main
